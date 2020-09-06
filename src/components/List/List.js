@@ -1,21 +1,17 @@
-import React, { Component } from "react";
+import React from "react";
 
-export default class List extends Component {
-  state = {};
-  componentDidMount() {}
+export default function List(props) {
 
-  handleSort = (slug, ev) => {
+  const handleSort = (slug, ev) => {
     ev.preventDefault();
-    this.props.handleSort(slug);
+    props.handleSort(slug);
   };
 
-  handleChange = (id, ev) => {
-    this.props.handleChange(id, ev.target.checked);
+  const handleChange = (id, ev) => {
+    props.handleChange(id, ev.target.checked);
   };
-
-  render() {
-    const datas = this.props.allCurrencies;
-    const show = this.props.show;
+    const datas = props.allCoins;
+    const show = props.show;
     //console.log(datas);
     return (
       <div className="list">
@@ -26,9 +22,6 @@ export default class List extends Component {
               {show.map((el, index) => (
                 <th key={index}>
                   <span>{el.label} </span>
-                  <button onClick={(ev) => this.handleSort(el.slug, ev)}>
-                    Sort
-                  </button>
                 </th>
               ))}
             </tr>
@@ -39,7 +32,7 @@ export default class List extends Component {
                 <td>
                   <input
                     type="checkbox"
-                    onChange={(ev) => this.handleChange(currency.id, ev)}
+                    onChange={(ev) => handleChange(currency.id, ev)}
                   />
                 </td>
                 {show.map((data) => (
@@ -61,5 +54,4 @@ export default class List extends Component {
         </table>
       </div>
     );
-  }
-}
+};

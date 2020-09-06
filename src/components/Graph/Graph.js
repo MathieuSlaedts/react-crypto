@@ -1,37 +1,34 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 
-export default class Graph extends Component {
-  state = {
-    graphWidth: "100%",
-    graphHeight: 500
+export default function Graph(props) {
+
+  const [graphDim, setGrapgDim] = useState({
+    width: "100%",
+    height: 500
+  });
+
+  const getGraphHeight = () => {
+    return Math.max(...props.favCoins.map((el) => el.current_price));
   };
 
-  getGraphHeight = () => {
-    return Math.max(...this.props.favCurrencies.map((el) => el.current_price));
-  };
-
-  getRandomColor = () => {
+  const getRandomColor = () => {
     return (
       "#" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6)
     );
   };
-
-  componentDidMount() {}
-
-  render() {
-    const datas = this.props.favCurrencies;
-    const colors = datas.map(() => this.getRandomColor());
+    const datas = props.favCoins;
+    const colors = datas.map(() => getRandomColor());
     return (
       <div className="graph">
-        <svg width={this.state.graphWidth} height={this.state.graphHeight}>
+        <svg width={graphDim.width} height={graphDim.height}>
           {datas.map((el, index) => (
             <g key={"gr" + el.id}>
               <rect
                 fill={colors[index]}
                 x={0 + index * (100 / datas.length) + "%"}
-                y={95 - (95 / this.getGraphHeight()) * el.current_price + "%"}
+                y={95 - (95 / getGraphHeight()) * el.current_price + "%"}
                 width={100 / datas.length + "%"}
-                height={(95 / this.getGraphHeight()) * el.current_price + "%"}
+                height={(95 / getGraphHeight()) * el.current_price + "%"}
               ></rect>
               <rect
                 fill={colors[index]}
@@ -62,5 +59,4 @@ export default class Graph extends Component {
         </svg>
       </div>
     );
-  }
 }

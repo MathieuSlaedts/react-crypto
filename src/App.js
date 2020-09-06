@@ -1,60 +1,31 @@
-import React, { Component } from "react";
+import React, { memo, useState, useEffect } from "react";
 import "./styles.scss";
 import axios from "axios";
 import List from "./components/List/List";
 import Graph from "./components/Graph/Graph";
 
-export default class App extends Component {
-  state = {
-    currencies: ["chainlink", "polkadot", "cosmos"],
-    allCurrencies: [],
-    favCurrencies: []
-  };
-
-  componentDidMount() {
-    this.loadApi();
-  }
-  render() {
-    return (
-      <div className="App">
-        <h1>Crypto</h1>
-        <div>
-          <List
-            allCurrencies={this.state.allCurrencies}
-            show={[
-              { label: "Coin", slug: "name" },
-              { label: "Current Price", slug: "current_price" },
-              { label: "Total Volume", slug: "total_volume" }
-            ]}
-            handleChange={this.handleFavs}
-            handleSort={this.sortCoins}
-          />
-          <Graph favCurrencies={this.state.favCurrencies} />
-        </div>
-      </div>
-    );
-  }
-
+export default memo(function App(props) {
+  
   /*
    * Get the Api from the Local Storage or from Axios
    * Update the Api in the State
    * Update the Api in the Local Storage
    */
-  loadApi = async () => {
+  const loadApi = async () => {
     let datas = [];
-    if (this.isLocalStorage() === true) {
-      datas = this.getDatasFromLocalStorage();
+    if (isLocalStorage() === true) {
+      datas = getDatasFromLocalStorage();
     } else {
-      datas = await this.getDatasFromAxios();
+      datas = await getDatasFromAxios();
     }
-    this.updateApiInState(datas);
-    this.updateLocalStorage(datas);
+    updateApiInState(datas);
+    updateLocalStorage(datas);
   };
 
   /*
    * Check if the local Storage is empty
    */
-  isLocalStorage = () => {
+  const isLocalStorage = () => {
     const fromLocalStorage = JSON.parse(
       window.localStorage.getItem("cryptoAppDatas")
     );
@@ -66,7 +37,7 @@ export default class App extends Component {
   /*
    * Get Api from Local Storage
    */
-  getDatasFromLocalStorage = () => {
+  const getDatasFromLocalStorage = () => {
     const datasFromLocalStorage = JSON.parse(
       window.localStorage.getItem("cryptoAppDatas")
     );
@@ -76,7 +47,7 @@ export default class App extends Component {
   /*
    * Get Api from Axios
    */
-  getDatasFromAxios = async () => {
+  const getDatasFromAxios = async () => {
     const res = await axios.get(
       "https://api.coingecko.com/api/v3/coins/markets?vs_currency=eur"
     );
@@ -86,7 +57,7 @@ export default class App extends Component {
   /*
    * Update LocalStorage
    */
-  updateLocalStorage = (datas) => {
+  const updateLocalStorage = (datas) => {
     const toLocalStorage = {
       time: Date.now(),
       datas: datas
@@ -100,32 +71,55 @@ export default class App extends Component {
   /*
    * Update Api in the Sate
    */
-  updateApiInState = (apiDatas) => {
-    this.setState({ allCurrencies: apiDatas });
+  const updateApiInState = (apiDatas) => {
+    setAllCoins(() => [...apiDatas]);
   };
 
-  handleFavs = (id, status) => {
+  const handleFavs = (id, status) => {
     // console.log(id, status);
 
     if (status === true) {
-      const newFav = [...this.state.allCurrencies].filter((el) => el.id === id);
-      this.setState({
-        favCurrencies: [...this.state.favCurrencies, ...newFav]
-      });
+      const newFav = [...allCoins].filter((el) => el.id === id);
+      setFavCoins(() => [...favCoins, ...newFav]);
     } else {
-      const newFav = [...this.state.favCurrencies].filter((el) => el.id !== id);
-      this.setState({
-        favCurrencies: [...newFav]
-      });
+      const newFav = [...favCoins].filter((el) => el.id !== id);
+      setFavCoins(() => [...newFav]);
     }
   };
 
-  sortCoins = (slug) => {
+  const sortCoins = (slug) => {
     console.log("Sort by " + slug);
-    const coins = [...this.state.allCurrencies].sort((a, b) =>
+    const coins = [...allCoins].sort((a, b) =>
       a.name > b.name ? 1 : -1
     );
-    this.updateApiInState(coins);
-    this.updateLocalStorage(coins);
+    updateApiInState(coins);
+    updateLocalStorage(coins);
   };
-}
+
+  // STATES
+  const [allCoins, setAllCoins] = useState([]);
+  const [favCoins, setFavCoins] = useState([]);
+  
+  // USE EFFECTS
+  useEffect( () => { loadApi() }, []);
+
+  // RENDER
+    return (
+      <div className="App">
+        <h1>Crypto</h1>
+        <div>
+          <List
+            allCoins={allCoins}
+            show={[
+              { label: "Coin", slug: "name" },
+              { label: "Current Price", slug: "current_price" },
+              { label: "Total Volume", slug: "total_volume" }
+            ]}
+            handleChange={handleFavs}
+            handleSort={sortCoins}
+          />
+          <Graph favCoins={favCoins} />
+        </div>
+      </div>
+    );
+});
